@@ -172,6 +172,7 @@ export async function getAnthropicClient({
       maxRetries,
       timeout: parseInt(process.env.API_TIMEOUT_MS || String(600 * 1000), 10),
       providerOverride,
+      fetchOverride: resolvedFetch as typeof globalThis.fetch | undefined,
     }) as unknown as Anthropic
   }
   if (
@@ -184,6 +185,7 @@ export async function getAnthropicClient({
       defaultHeaders,
       maxRetries,
       timeout: parseInt(process.env.API_TIMEOUT_MS || String(600 * 1000), 10),
+      fetchOverride: resolvedFetch as typeof globalThis.fetch | undefined,
     }) as unknown as Anthropic
   }
   if (isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK)) {

@@ -934,11 +934,13 @@ class OpenAIShimMessages {
   private defaultHeaders: Record<string, string>
   private reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh'
   private providerOverride?: { model: string; baseURL: string; apiKey: string }
+  private fetchOverride?: typeof globalThis.fetch
 
-  constructor(defaultHeaders: Record<string, string>, reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh', providerOverride?: { model: string; baseURL: string; apiKey: string }) {
+  constructor(defaultHeaders: Record<string, string>, reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh', providerOverride?: { model: string; baseURL: string; apiKey: string }, fetchOverride?: typeof globalThis.fetch) {
     this.defaultHeaders = defaultHeaders
     this.reasoningEffort = reasoningEffort
     this.providerOverride = providerOverride
+    this.fetchOverride = fetchOverride
   }
 
   create(
@@ -1241,7 +1243,7 @@ class OpenAIShimMessages {
     const maxAttempts = isGithub ? GITHUB_429_MAX_RETRIES : 1
     let response: Response | undefined
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      response = await fetch(chatCompletionsUrl, fetchInit)
+      response = await (this.fetchOverride ?? fetch)(chatCompletionsUrl, fetchInit)
       if (response.ok) {
         return response
       }
@@ -1470,8 +1472,8 @@ class OpenAIShimBeta {
   messages: OpenAIShimMessages
   reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh'
 
-  constructor(defaultHeaders: Record<string, string>, reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh', providerOverride?: { model: string; baseURL: string; apiKey: string }) {
-    this.messages = new OpenAIShimMessages(defaultHeaders, reasoningEffort, providerOverride)
+  constructor(defaultHeaders: Record<string, string>, reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh', providerOverride?: { model: string; baseURL: string; apiKey: string }, fetchOverride?: typeof globalThis.fetch) {
+    this.messages = new OpenAIShimMessages(defaultHeaders, reasoningEffort, providerOverride, fetchOverride)
     this.reasoningEffort = reasoningEffort
   }
 }
@@ -1482,6 +1484,7 @@ export function createOpenAIShimClient(options: {
   timeout?: number
   reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh'
   providerOverride?: { model: string; baseURL: string; apiKey: string }
+  fetchOverride?: typeof globalThis.fetch
 }): unknown {
   hydrateGeminiAccessTokenFromSecureStorage()
   hydrateGithubModelsTokenFromSecureStorage()
@@ -1508,7 +1511,7 @@ export function createOpenAIShimClient(options: {
 
   const beta = new OpenAIShimBeta({
     ...(options.defaultHeaders ?? {}),
-  }, options.reasoningEffort, options.providerOverride)
+  }, options.reasoningEffort, options.providerOverride, options.fetchOverride)
 
   return {
     beta,

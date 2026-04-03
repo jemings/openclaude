@@ -207,16 +207,6 @@ export const getContainerId = async () => null;
 
 	// ─── Deleted Anthropic-internal modules ───────────────────────────────
 
-	'services/api/dumpPrompts': `
-export function createDumpPromptsFetch() { return undefined; }
-export function getDumpPromptsPath() { return ''; }
-export function getLastApiRequests() { return []; }
-export function clearApiRequestCache() {}
-export function clearDumpState() {}
-export function clearAllDumpState() {}
-export function addApiRequestToCache() {}
-`,
-
 	'utils/undercover': `
 export function isUndercover() { return false; }
 export function getUndercoverInstructions() { return ''; }
